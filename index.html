@@ -19,7 +19,7 @@
   --success:#10b981;--warn:#f59e0b;--danger:#ef4444;
   --shadow:0 4px 24px rgba(0,0,0,0.35);--shadowh:0 8px 40px rgba(99,102,241,0.18);
   --trans:all 0.3s cubic-bezier(0.25,1,0.5,1);
-  --side-w:162px;--right-w:280px;
+  --right-w:280px;
 }
 [data-theme="light"]{
   --bg:#EEF2F7;--bg2:#E2E8F0;--bg3:#F1F5F9;
@@ -56,7 +56,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
 
 /* TOPBAR */
-#topbar{height:70px;min-height:70px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;z-index:20;}
+#topbar{height:70px;min-height:70px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;z-index:20;
+  --bg2:#111827;--card:#1a2436;--border:#1e3050;--t1:#e2e8f0;--t2:#94a3b8;--t3:#475569;--accent:#6366f1;--alight:#818cf8;--aglow:rgba(99,102,241,0.14);--warn:#f59e0b;}
 .tlogo{height:36px;object-fit:contain;flex-shrink:0;}
 .tdiv{width:1px;height:22px;background:var(--border);flex-shrink:0;}
 .fg{display:flex;flex-direction:column;gap:3px;align-items:flex-start;justify-content:center;}
@@ -72,28 +73,22 @@ select.fsel{background:var(--card);color:var(--t1);border:1px solid var(--border
 .tbtn:disabled{opacity:.55;cursor:not-allowed;}
 canvas{cursor:pointer;}
 
+/* NAV MENU */
+#navmenu{width:148px;min-width:148px;background:#060d1a;display:flex;flex-direction:column;padding:14px 8px;gap:3px;border-right:1px solid #0d1829;flex-shrink:0;overflow-y:auto;}
+.navitem{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;border:none;background:transparent;color:#7d93b3;font-family:inherit;font-size:11.5px;font-weight:600;cursor:pointer;transition:var(--trans);text-align:left;width:100%;}
+.navitem svg{width:15px;height:15px;flex-shrink:0;}
+.navitem:hover{background:#0d1829;color:#e2e8f0;}
+.navitem.active{background:#6366f1;color:#fff;}
+
 /* BODY */
 #body{flex:1;display:flex;overflow:hidden;}
-
-/* SIDEBAR */
-#sidebar{width:var(--side-w);min-width:var(--side-w);background:#060d1a;display:flex;flex-direction:column;align-items:center;padding:10px 0 14px;gap:4px;border-right:1px solid #0d1829;flex-shrink:0;overflow-y:auto;overflow-x:hidden;}
-#sidebar::-webkit-scrollbar{width:3px;}
-#sidebar::-webkit-scrollbar-thumb{background:#1e3050;border-radius:2px;}
-.side-section-lbl{font-size:11px;font-weight:800;color:#4a7fa8;text-transform:uppercase;letter-spacing:.8px;margin:8px 0 4px;}
-.sdiv{width:60px;height:1px;background:#0d1829;margin:5px 0;flex-shrink:0;}
-.pill{width:138px;min-height:54px;background:#060d1a;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #0d1829;transition:var(--trans);padding:6px 6px;}
-.pill:hover{border-color:#1e3a5f;}
-.pnum{font-size:16px;font-weight:700;color:#f59e0b;font-family:'JetBrains Mono',monospace;line-height:1.3;text-align:center;word-break:break-all;}
-.plbl{font-size:9px;color:#6b88a8;text-align:center;margin-top:3px;line-height:1.3;padding:0 4px;}
-.pill-pct .pnum{color:#38bdf8;font-size:17px;}
-.pill-avg .pnum{color:#a78bfa;font-size:14px;}
-.pill-ok .pnum{color:#10b981;font-size:17px;}
 
 /* MAIN */
 #main{flex:1;display:flex;overflow:hidden;}
 #scroll{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;}
 #scroll::-webkit-scrollbar{width:4px;}
 #scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.section-group{display:flex;flex-direction:column;gap:8px;}
 
 /* CARDS */
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:var(--trans);}
@@ -195,8 +190,6 @@ canvas{cursor:pointer;}
         <select class="fsel" id="fSemana"><option value="">Todas</option></select></div>
       <div class="fg"><span class="flbl">Estado</span>
         <select class="fsel" id="fEstado"><option value="">Todos</option></select></div>
-      <div class="fg"><span class="flbl">Actividad</span>
-        <select class="fsel" id="fActividad"><option value="">Todas</option></select></div>
       <div class="fg"><span class="flbl">Área</span>
         <select class="fsel" id="fArea"><option value="">Todas</option></select></div>
       <div class="fg"><span class="flbl">Status</span>
@@ -251,20 +244,24 @@ canvas{cursor:pointer;}
   <!-- BODY -->
   <div id="body">
 
-    <!-- SIDEBAR -->
-    <div id="sidebar">
-      <div class="side-section-lbl">Área</div>
-      <div class="sdiv"></div>
-      <div class="pill"><span class="pnum" id="sOps">–</span><span class="plbl">Operaciones</span></div>
-      <div class="pill"><span class="pnum" id="sSvcs">–</span><span class="plbl">Servicios</span></div>
-      <div class="sdiv"></div>
-      <div class="side-section-lbl">Pagos</div>
-      <div class="pill pill-pct"><span class="pnum" id="sPctPag">–</span><span class="plbl">% Pagadas</span></div>
-      <div class="pill pill-avg"><span class="pnum" id="sAvg">–</span><span class="plbl">Promedio x Factura</span></div>
-      <div class="sdiv"></div>
-      <div class="side-section-lbl">Operación</div>
-      <div class="pill pill-ok"><span class="pnum" id="sSemanas">–</span><span class="plbl">Semanas Activas</span></div>
-      <div class="pill pill-ok"><span class="pnum" id="sTickets">–</span><span class="plbl">Tickets / Series</span></div>
+    <!-- NAV -->
+    <div id="navmenu">
+      <button type="button" class="navitem active" data-nav="resumen" onclick="showSection('resumen')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Resumen</span>
+      </button>
+      <button type="button" class="navitem" data-nav="actividad" onclick="showSection('actividad')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <span>Actividad</span>
+      </button>
+      <button type="button" class="navitem" data-nav="proveedores" onclick="showSection('proveedores')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        <span>Proveedores</span>
+      </button>
+      <button type="button" class="navitem" data-nav="costos" onclick="showSection('costos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <span>Costos</span>
+      </button>
     </div>
 
     <!-- MAIN -->
@@ -287,64 +284,71 @@ canvas{cursor:pointer;}
             <div class="kval" id="kViaticos" style="color:#f472b6;">$0</div><div class="klbl">Traslados</div></div>
         </div>
 
-        <!-- Facturas por Semana -->
-        <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Facturas y Monto por Semana</div>
-          <div style="position:relative;height:190px;"><canvas id="chSemana"></canvas></div>
-        </div>
+        <!-- SECCIÓN: Resumen -->
+        <div class="section-group" data-section="resumen">
+          <!-- Facturas por Semana -->
+          <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
+            <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Facturas y Monto por Semana</div>
+            <div style="position:relative;height:190px;"><canvas id="chSemana"></canvas></div>
+          </div>
 
-        <!-- Estatus + Área -->
-        <div class="r2">
-          <div class="card">
-            <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>Estatus de Facturas</div>
-            <div style="display:flex;gap:10px;height:175px;align-items:center;">
-              <div style="width:145px;height:145px;flex-shrink:0;"><canvas id="chStatus"></canvas></div>
-              <div class="dleg" id="legStatus"></div>
+          <!-- Estatus + Área -->
+          <div class="r2">
+            <div class="card">
+              <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>Estatus de Facturas</div>
+              <div style="display:flex;gap:10px;height:175px;align-items:center;">
+                <div style="width:145px;height:145px;flex-shrink:0;"><canvas id="chStatus"></canvas></div>
+                <div class="dleg" id="legStatus"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>Facturas por Área</div>
+              <div style="display:flex;gap:10px;height:175px;align-items:center;">
+                <div style="width:145px;height:145px;flex-shrink:0;"><canvas id="chArea"></canvas></div>
+                <div class="dleg" id="legArea"></div>
+              </div>
             </div>
           </div>
-          <div class="card">
-            <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>Facturas por Área</div>
-            <div style="display:flex;gap:10px;height:175px;align-items:center;">
-              <div style="width:145px;height:145px;flex-shrink:0;"><canvas id="chArea"></canvas></div>
-              <div class="dleg" id="legArea"></div>
+        </div>
+
+        <!-- SECCIÓN: Actividad -->
+        <div class="section-group" data-section="actividad" style="display:none;">
+          <div class="r2">
+            <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
+              <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Facturas por Actividad</div>
+              <div style="position:relative;height:280px;"><canvas id="chActividad"></canvas></div>
+            </div>
+            <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
+              <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/></svg>Tickets / Series por Proveedor</div>
+              <div style="position:relative;height:280px;"><canvas id="chTickets"></canvas></div>
             </div>
           </div>
         </div>
 
-        <!-- Importe por Proveedor + Ciclo de Pago (lado a lado) -->
-        <div class="r2">
-          <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
-            <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>Importe Total por Proveedor</div>
-            <div style="position:relative;height:380px;"><canvas id="chProveedor"></canvas></div>
-          </div>
-          <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
-            <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Ciclo de Pago — Días Timbrado → Pago</div>
-            <div style="position:relative;height:380px;"><canvas id="chCiclo"></canvas></div>
-          </div>
-        </div>
-
-        <!-- Monto por Estado — ancho completo -->
-        <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Monto Facturado por Estado</div>
-          <div style="position:relative;height:230px;"><canvas id="chEstado"></canvas></div>
-        </div>
-
-        <!-- Actividad + Tickets (lado a lado) -->
-        <div class="r2">
-          <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
-            <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Facturas por Actividad</div>
-            <div style="position:relative;height:280px;"><canvas id="chActividad"></canvas></div>
-          </div>
-          <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
-            <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/></svg>Tickets / Series por Proveedor</div>
-            <div style="position:relative;height:280px;"><canvas id="chTickets"></canvas></div>
+        <!-- SECCIÓN: Proveedores -->
+        <div class="section-group" data-section="proveedores" style="display:none;">
+          <div class="r2">
+            <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
+              <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>Importe Total por Proveedor</div>
+              <div style="position:relative;height:380px;"><canvas id="chProveedor"></canvas></div>
+            </div>
+            <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
+              <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Ciclo de Pago — Días Timbrado → Pago</div>
+              <div style="position:relative;height:380px;"><canvas id="chCiclo"></canvas></div>
+            </div>
           </div>
         </div>
 
-        <!-- Distribución de Costos por Proveedor — ancho completo -->
-        <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Distribución de Costos por Proveedor</div>
-          <div style="position:relative;height:300px;"><canvas id="chCostos"></canvas></div>
+        <!-- SECCIÓN: Costos -->
+        <div class="section-group" data-section="costos" style="display:none;">
+          <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
+            <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Monto Facturado por Estado</div>
+            <div style="position:relative;height:230px;"><canvas id="chEstado"></canvas></div>
+          </div>
+          <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
+            <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Distribución de Costos por Proveedor</div>
+            <div style="position:relative;height:300px;"><canvas id="chCostos"></canvas></div>
+          </div>
         </div>
 
       </div><!-- /scroll -->
@@ -543,11 +547,11 @@ function fillFilters(){
     sel.innerHTML='<option value="">Todas</option>'+vals.map(v=>`<option value="${v}">${v}</option>`).join('');
     if(prev&&vals.map(v=>String(v)).includes(String(prev)))sel.value=prev;
   };
-  fill('fSemana','SEMANA');fill('fEstado','ESTADO');fill('fActividad','ACTIVIDAD');fill('fArea','AREA');
+  fill('fSemana','SEMANA');fill('fEstado','ESTADO');fill('fArea','AREA');
   // CANCELADA nunca aparece en el dropdown — el checkbox es el único acceso
   fill('fStatus','STATUS', v=>norm(String(v))==='CANCELADA');
   fill('fCuenta','CUENTA');
-  ['fSemana','fEstado','fActividad','fArea','fStatus','fCuenta'].forEach(id=>{
+  ['fSemana','fEstado','fArea','fStatus','fCuenta'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el._bound){el._bound=true;el.addEventListener('change',()=>{if(rawData.length)rebuildAll();});}
   });
@@ -566,13 +570,11 @@ function getFiltered(){
   d=d.filter(r=>norm(String(r['STATUS']||''))!=='CANCELADA');
   const fS=document.getElementById('fSemana')?.value;
   const fE=document.getElementById('fEstado')?.value;
-  const fA=document.getElementById('fActividad')?.value;
   const fAr=document.getElementById('fArea')?.value;
   const fSt=document.getElementById('fStatus')?.value;
   const fC=document.getElementById('fCuenta')?.value;
   if(fS)d=d.filter(r=>String(r['SEMANA']||'').trim()===String(fS).trim());
   if(fE)d=d.filter(r=>norm(r['ESTADO'])===norm(fE));
-  if(fA)d=d.filter(r=>norm(r['ACTIVIDAD'])===norm(fA));
   if(fAr)d=d.filter(r=>norm(r['AREA'])===norm(fAr));
   if(fSt)d=d.filter(r=>norm(r['STATUS'])===norm(fSt));
   if(fC)d=d.filter(r=>norm(r['CUENTA'])===norm(fC));
@@ -589,7 +591,7 @@ function updateCFUI(){
   if(badge){badge.textContent=active.length;badge.style.display=active.length?'inline':'none';}
 }
 function resetFiltros(){
-  ['fSemana','fEstado','fActividad','fArea','fStatus','fCuenta'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fSemana','fEstado','fArea','fStatus','fCuenta'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   for(const k of Object.keys(CF))CF[k]=null;updateCFUI();rebuildAll();
 }
 
@@ -991,6 +993,17 @@ function fillTable(id,data,field){
   el.innerHTML=h;
 }
 
+/* ══ NAV SECCIONES ══ */
+function showSection(name){
+  document.querySelectorAll('.section-group').forEach(el=>{
+    el.style.display = el.dataset.section===name ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.navitem').forEach(el=>{
+    el.classList.toggle('active', el.dataset.nav===name);
+  });
+  Object.values(charts).forEach(c=>{if(c)c.resize();});
+}
+
 /* ══ TEMA ══ */
 function toggleTheme(){
   theme=theme==='dark'?'light':'dark';
@@ -1018,13 +1031,16 @@ async function exportPDF(){
   const orig=btn.innerHTML;btn.innerHTML='⏳ Generando...';btn.disabled=true;
   const topbar=document.getElementById('topbar');
   const prevTheme=theme;
+  const prevSection=document.querySelector('.navitem.active')?.dataset.nav||'resumen';
   try{
-    // Cambiar a tema claro y ocultar topbar para captura limpia
+    // Cambiar a tema claro, ocultar topbar y mostrar todas las secciones para captura completa
     theme='light';
     document.documentElement.setAttribute('data-theme','light');
     setLogos();
     topbar.style.display='none';
+    document.querySelectorAll('.section-group').forEach(el=>{el.style.display='flex';});
     rebuildAll();
+    Object.values(charts).forEach(c=>{if(c)c.resize();});
     await new Promise(r=>setTimeout(r,700));
 
     const {jsPDF}=window.jspdf;
@@ -1071,6 +1087,7 @@ async function exportPDF(){
     document.documentElement.setAttribute('data-theme','');
     setLogos();rebuildAll();
   }
+  showSection(prevSection);
   btn.innerHTML=orig;btn.disabled=false;
 }
 
