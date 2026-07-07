@@ -64,6 +64,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .flbl{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
 select.fsel{background:var(--card);color:var(--t1);border:1px solid var(--border);border-radius:6px;padding:5px 20px 5px 7px;font-family:inherit;font-size:10px;cursor:pointer;outline:none;transition:var(--trans);appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 4l3 3 3-3' stroke='%2394A3B8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;max-width:100px;}
 .fsel:focus{border-color:var(--accent);}
+.msel{position:relative;}
+.msel-btn{display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--card);color:var(--t1);border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-family:inherit;font-size:10px;cursor:pointer;outline:none;transition:var(--trans);max-width:100px;}
+.msel-btn:hover,.msel-btn.open{border-color:var(--accent);}
+.msel-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.msel-btn svg{flex-shrink:0;opacity:.7;}
+.msel-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px;min-width:170px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:var(--shadow);}
+.msel-panel.open{display:block;}
+.msel-opt{display:flex;align-items:center;gap:6px;padding:4px 6px;font-size:10px;color:var(--t1);cursor:pointer;border-radius:5px;white-space:nowrap;}
+.msel-opt:hover{background:var(--bg3);}
+.msel-opt input{cursor:pointer;flex-shrink:0;}
 .tbtn{display:inline-flex;align-items:center;gap:4px;padding:5px 9px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--t2);font-family:inherit;font-size:9px;font-weight:600;cursor:pointer;transition:var(--trans);white-space:nowrap;}
 .tbtn:hover{border-color:var(--accent);color:var(--accent);}
 .tbtn svg{width:12px;height:12px;flex-shrink:0;}
@@ -195,7 +205,13 @@ canvas{cursor:pointer;}
       <div class="fg"><span class="flbl">Status</span>
         <select class="fsel" id="fStatus"><option value="">Todos</option></select></div>
       <div class="fg"><span class="flbl">Cuenta</span>
-        <select class="fsel" id="fCuenta"><option value="">Todas</option></select></div>
+        <div class="msel" id="mselCuenta">
+          <button type="button" class="msel-btn" id="mselCuentaBtn" onclick="toggleCuentaMenu(event)">
+            <span id="mselCuentaLbl">Todas</span>
+            <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l3 3 3-3"/></svg>
+          </button>
+          <div class="msel-panel" id="mselCuentaPanel"></div>
+        </div></div>
     </div>
 
     <!-- BOTONES -->
@@ -343,7 +359,7 @@ canvas{cursor:pointer;}
         <div class="section-group" data-section="costos" style="display:none;">
           <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
             <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Monto Facturado por Estado</div>
-            <div style="position:relative;height:230px;"><canvas id="chEstado"></canvas></div>
+            <div style="position:relative;height:270px;"><canvas id="chEstado"></canvas></div>
           </div>
           <div class="card" draggable="true"><div class="drag-handle"><span></span><span></span><span></span></div>
             <div class="ctitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Distribución de Costos por Proveedor</div>
@@ -390,6 +406,7 @@ let rawData=[],charts={},theme='dark',fontLg=false,lastFile=null,fileHandle=null
 /* Escala de fuente accesible — todos los chart font:{size:N} usan fs(N) */
 function fs(n){ return fontLg ? Math.round(n*1.4) : n; }
 const CF={'STATUS':null,'AREA':null,'NOMBRE COMERCIAL':null,'ACTIVIDAD':null,'ESTADO':null};
+let selectedCuentas=new Set();
 
 /* ══ UTILS ══ */
 function norm(v){return v?String(v).trim().toUpperCase():'';}
@@ -550,8 +567,8 @@ function fillFilters(){
   fill('fSemana','SEMANA');fill('fEstado','ESTADO');fill('fArea','AREA');
   // CANCELADA nunca aparece en el dropdown — el checkbox es el único acceso
   fill('fStatus','STATUS', v=>norm(String(v))==='CANCELADA');
-  fill('fCuenta','CUENTA');
-  ['fSemana','fEstado','fArea','fStatus','fCuenta'].forEach(id=>{
+  fillCuentaFilter();
+  ['fSemana','fEstado','fArea','fStatus'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el._bound){el._bound=true;el.addEventListener('change',()=>{if(rawData.length)rebuildAll();});}
   });
@@ -559,25 +576,61 @@ function fillFilters(){
   if(chkCan&&!chkCan._bound){chkCan._bound=true;chkCan.addEventListener('change',()=>{if(rawData.length)rebuildAll();});}
 }
 
+/* ══ CUENTA (multi-select) ══ */
+function fillCuentaFilter(){
+  const panel=document.getElementById('mselCuentaPanel');
+  if(!panel)return;
+  const vals=[...new Set(rawData.map(r=>r['CUENTA']).filter(v=>v!==null&&v!==undefined&&v!==''))]
+    .sort((a,b)=>String(a).localeCompare(String(b)));
+  const validSet=new Set(vals.map(v=>norm(v)));
+  selectedCuentas=new Set([...selectedCuentas].filter(v=>validSet.has(v)));
+  panel.innerHTML=vals.map(v=>{
+    const nv=norm(v);
+    return `<label class="msel-opt"><input type="checkbox" value="${nv}" ${selectedCuentas.has(nv)?'checked':''}> ${v}</label>`;
+  }).join('');
+  panel.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change',()=>{
+      if(cb.checked)selectedCuentas.add(cb.value);else selectedCuentas.delete(cb.value);
+      updateCuentaLabel();
+      if(rawData.length)rebuildAll();
+    });
+  });
+  updateCuentaLabel();
+}
+function updateCuentaLabel(){
+  const lbl=document.getElementById('mselCuentaLbl');
+  if(!lbl)return;
+  if(selectedCuentas.size===0)lbl.textContent='Todas';
+  else if(selectedCuentas.size===1)lbl.textContent=[...selectedCuentas][0];
+  else lbl.textContent=selectedCuentas.size+' seleccionadas';
+}
+function toggleCuentaMenu(e){
+  e.stopPropagation();
+  document.getElementById('mselCuentaPanel')?.classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#mselCuenta'))document.getElementById('mselCuentaPanel')?.classList.remove('open');
+});
+
 function getFiltered(){
   let d=[...rawData];
   const showCanceladas=document.getElementById('chkCanceladas')?.checked;
-  // Checkbox desactivado → excluir canceladas totalmente
-  // Checkbox activo     → mostrar SOLO canceladas (ignora otros filtros de status)
-  if(showCanceladas){
-    return d.filter(r=>norm(String(r['STATUS']||''))==='CANCELADA');
-  }
-  d=d.filter(r=>norm(String(r['STATUS']||''))!=='CANCELADA');
   const fS=document.getElementById('fSemana')?.value;
   const fE=document.getElementById('fEstado')?.value;
   const fAr=document.getElementById('fArea')?.value;
   const fSt=document.getElementById('fStatus')?.value;
-  const fC=document.getElementById('fCuenta')?.value;
+  // Checkbox desactivado → excluir canceladas totalmente, y aplica el filtro de Status
+  // Checkbox activo     → solo canceladas (el filtro de Status no aplica, ya que ahí nunca aparece CANCELADA)
+  if(showCanceladas){
+    d=d.filter(r=>norm(String(r['STATUS']||''))==='CANCELADA');
+  } else {
+    d=d.filter(r=>norm(String(r['STATUS']||''))!=='CANCELADA');
+    if(fSt)d=d.filter(r=>norm(r['STATUS'])===norm(fSt));
+  }
   if(fS)d=d.filter(r=>String(r['SEMANA']||'').trim()===String(fS).trim());
   if(fE)d=d.filter(r=>norm(r['ESTADO'])===norm(fE));
   if(fAr)d=d.filter(r=>norm(r['AREA'])===norm(fAr));
-  if(fSt)d=d.filter(r=>norm(r['STATUS'])===norm(fSt));
-  if(fC)d=d.filter(r=>norm(r['CUENTA'])===norm(fC));
+  if(selectedCuentas.size)d=d.filter(r=>selectedCuentas.has(norm(r['CUENTA'])));
   for(const[field,val]of Object.entries(CF)){if(val!==null)d=d.filter(r=>norm(r[field])===val);}
   return d;
 }
@@ -591,7 +644,10 @@ function updateCFUI(){
   if(badge){badge.textContent=active.length;badge.style.display=active.length?'inline':'none';}
 }
 function resetFiltros(){
-  ['fSemana','fEstado','fArea','fStatus','fCuenta'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fSemana','fEstado','fArea','fStatus'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  selectedCuentas.clear();
+  document.querySelectorAll('#mselCuentaPanel input[type=checkbox]').forEach(cb=>{cb.checked=false;});
+  updateCuentaLabel();
   for(const k of Object.keys(CF))CF[k]=null;updateCFUI();rebuildAll();
 }
 
@@ -718,6 +774,13 @@ function renderProveedorBar(data){
   const groups=sumBy(data,'NOMBRE COMERCIAL','TOTAL');
   const sorted=Object.entries(groups).sort((a,b)=>b[1]-a[1]);
   const labels=sorted.map(([k])=>k);const values=sorted.map(([,v])=>v);
+  /* Facturas que integran el total de cada proveedor, para el tooltip */
+  const facturasPorProveedor={};
+  data.forEach(r=>{
+    const k=norm(r['NOMBRE COMERCIAL'])||'(sin dato)';
+    if(!facturasPorProveedor[k])facturasPorProveedor[k]=[];
+    facturasPorProveedor[k].push({folio:r['FACTURA']||'(sin folio)',cuenta:r['CUENTA']||'sin cuenta',total:parseFloat(r['TOTAL'])||0});
+  });
   const ctx=document.getElementById('chProveedor');if(!ctx)return;
   /* Altura dinámica: 30px por fila, mínimo 250px */
   setChartHeight('chProveedor', labels.length, 18, 200);
@@ -726,8 +789,8 @@ function renderProveedorBar(data){
     backgroundColor:labels.map((_,i)=>BLUE_P[i%BLUE_P.length]),
     borderRadius:3,
     barThickness:12,
-    
-    
+
+
   }]},options:{
     indexAxis:'y',responsive:true,maintainAspectRatio:false,
     layout:{padding:{right:130}},
@@ -736,7 +799,13 @@ function renderProveedorBar(data){
       legend:{display:false},
       datalabels:{color:d.label,font:{size:fs(8),weight:400},anchor:'end',align:'end',
         formatter:v=>fmtInt(v),clamp:false,clip:false},
-      tooltip:{callbacks:{label:ctx=>'Total: '+fmtInt(ctx.raw)}}
+      tooltip:{callbacks:{
+        label:ctx=>'Total: '+fmtInt(ctx.raw),
+        afterLabel:ctx=>{
+          const facturas=(facturasPorProveedor[labels[ctx.dataIndex]]||[]).sort((a,b)=>b.total-a.total);
+          return facturas.map(f=>'  '+f.folio+' ('+f.cuenta+'): '+fmtInt(f.total));
+        }
+      }}
     },
     scales:{
       x:{ticks:{color:d.tick,font:{size:fs(8)},callback:v=>fmtAxis(v)},grid:{color:d.grid},beginAtZero:true},
@@ -832,33 +901,48 @@ function renderCostosBar(data){
 /* ══ G7: Estado ══ */
 function renderEstadoBar(data){
   destroyC('chEstado');const d=gd();
-  const groups=sumBy(data,'ESTADO','TOTAL');
-  const sorted=Object.entries(groups).sort((a,b)=>b[1]-a[1]);
-  const labels=sorted.map(([k])=>k);const values=sorted.map(([,v])=>v);
-  const cols=['#818cf8','#c084fc','#38bdf8','#6366f1','#06b6d4','#a78bfa','#60a5fa'];
+  const groups={};
+  data.forEach(r=>{
+    const k=norm(r['ESTADO'])||'(sin dato)';
+    if(!groups[k])groups[k]={importe:0,viaticos:0,otros:0,refacciones:0,iva:0};
+    groups[k].importe    +=(parseFloat(r['IMPORTE'])||0);
+    groups[k].viaticos   +=(parseFloat(r['GASTOS DE TRASLADOS'])||0);
+    groups[k].otros      +=(parseFloat(r['OTROS'])||0);
+    groups[k].refacciones+=(parseFloat(r['REFACCIONES'])||0);
+    groups[k].iva        +=(parseFloat(r['IVA'])||0);
+  });
+  const labels=Object.entries(groups)
+    .sort((a,b)=>{
+      const ta=a[1].importe+a[1].viaticos+a[1].otros+a[1].refacciones+a[1].iva;
+      const tb=b[1].importe+b[1].viaticos+b[1].otros+b[1].refacciones+b[1].iva;
+      return tb-ta;
+    })
+    .map(([k])=>k);
+  if(!labels.length)return;
   const ctx=document.getElementById('chEstado');if(!ctx)return;
-  charts['chEstado']=new Chart(ctx,{type:'bar',data:{labels,datasets:[{
-    data:values,
-    backgroundColor:labels.map((_,i)=>cols[i%cols.length]),
-    borderRadius:4
-  }]},options:{
+  charts['chEstado']=new Chart(ctx,{type:'bar',data:{labels,datasets:[
+    {label:'Importe',    data:labels.map(k=>groups[k].importe),    backgroundColor:'#3b82f6',borderRadius:2,datalabels:{display:false}},
+    {label:'Traslados',  data:labels.map(k=>groups[k].viaticos),   backgroundColor:'#F59E0B',borderRadius:2,datalabels:{display:false}},
+    {label:'Otros',     data:labels.map(k=>groups[k].otros),      backgroundColor:'#94a3b8',borderRadius:2,datalabels:{display:false}},
+    {label:'Refacciones',data:labels.map(k=>groups[k].refacciones),backgroundColor:'#EF4444',borderRadius:2,datalabels:{display:false}},
+    {label:'IVA',       data:labels.map(k=>groups[k].iva),        backgroundColor:'#10b981',borderRadius:2,datalabels:{display:false}}
+  ]},options:{
     responsive:true,maintainAspectRatio:false,
-    layout:{padding:{top:52}},
     onClick(e,items){if(!items.length)setCF('ESTADO',null);else setCF('ESTADO',labels[items[0].index]);},
     plugins:{
-      legend:{display:false},
-      datalabels:{
-        color:d.label,font:{size:fs(8),weight:400},
-        anchor:'end',align:'top',rotation:-90,
-        /* número exacto, sin K */
-        formatter:v=>fmtInt(v),
-        clamp:false,clip:false,offset:4
-      },
-      tooltip:{callbacks:{label:ctx=>'Total: '+fmtInt(ctx.raw)}}
+      legend:{display:true,position:'bottom',labels:{color:d.tick,font:{size:fs(8)},boxWidth:9}},
+      datalabels:{display:false},
+      tooltip:{mode:'index',intersect:false,callbacks:{
+        label:ctx=>`${ctx.dataset.label}: ${fmtInt(ctx.raw)}`,
+        footer:items=>{
+          const total=items.reduce((s,i)=>s+(parseFloat(i.raw)||0),0);
+          return total>0?'Total: '+fmtInt(total):'';
+        }
+      }}
     },
     scales:{
-      x:{ticks:{color:d.tick,font:{size:fs(8)},maxRotation:25,minRotation:0},grid:{color:'transparent'}},
-      y:{ticks:{color:d.tick,font:{size:fs(8)},callback:v=>fmtAxis(v)},grid:{color:d.grid},beginAtZero:true}
+      x:{stacked:true,ticks:{color:d.tick,font:{size:fs(8)},maxRotation:25,minRotation:0},grid:{color:'transparent'}},
+      y:{stacked:true,ticks:{color:d.tick,font:{size:fs(8)},callback:v=>fmtAxis(v)},grid:{color:d.grid},beginAtZero:true}
     }
   }});
 }
